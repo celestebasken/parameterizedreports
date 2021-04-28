@@ -1,0 +1,37 @@
+---
+title: "NE Iterating Sheet"
+author: "Celeste Basken"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+params:
+  state: "Maryland"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+
+```{r}
+library(tidyverse)
+library(fivethirtyeight)
+library(readr)
+```
+
+```{r}
+historicCurrentStates <- read_csv("historicCurrentStates.csv")
+NE_subset <- historicCurrentStates %>%
+  filter(state == params$state)
+
+NE_subset %>%
+  select(state, currentAverageAcres, historic_acres_burned) %>%
+  gather(key = "key", value = "value", -state) %>%
+  ggplot(aes(key, value)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(expand = c(0, 0)) +  
+  labs(title = stringr::str_glue("Current Annual Acres Burned Compared to Historic in {params$state}"))
+```
+
+
