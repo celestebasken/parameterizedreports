@@ -3,8 +3,10 @@ getwd()
 library(tidyverse)
 
 #Loading CA data
-evt_ca <- read.csv("./EVT_Percentages/US200EVT_CA.csv")
-tnc_ca <- read.csv("./EVT_Percentages/US200EVT_CA_TNC.csv")
+
+
+evt_ca <- read.csv("evtEcoProtect/US200EVT_CA.csv")
+tnc_ca <- read.csv("evtEcoProtect/US200EVT_CA_TNC.csv")
 
 #I want to pull the EVTs which exist in CA but not in TNC_CA into their own table
 
