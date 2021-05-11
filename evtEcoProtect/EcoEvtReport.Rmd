@@ -43,7 +43,7 @@ evt_eco_prot <- evt_eco_prot %>%
 
 # join to single data frame and replace NAs with 0
 # evt_combine <- left_join(evt_eco, evt_eco_prot)      # why are there a bunch of NAs?? this join did not work- likely because some column names were the same
-evt_combine <- merge(x = evt_eco, y = evt_eco_prot, by = "VALUE", all.x = TRUE) # this join worked
+evt_combine <- merge(x = evt_eco, y = evt_eco_prot, by = "US_200EVT", all.x = TRUE) # this join worked
 
 # removing duplicate columns and cleaning it up
 evt_combine <- subset(evt_combine, select = -c(ECOREGION_RASTER.y, EVT_NAME.y, EVT_PHYS.y, ECO_NAME.y))
@@ -66,14 +66,9 @@ evt_combine <- evt_combine %>%
 
 evt_combine <- evt_combine %>% filter(PERCENT_ALL != 0)
 
-
-
 # subsetting whole chart into just parameter
 ECO_subset <- evt_combine %>% 
   filter(ECO_NAME == params$ECO_NAME)
-
-# colors
-display.brewer.all()
 
 # plot diverging bar
 ggplot(data = ECO_subset, aes(x = EVT_NAME, y = diff)) +
@@ -88,6 +83,15 @@ ggplot(data = ECO_subset, aes(x = EVT_NAME, y = diff)) +
        fill = "") +
   theme_light() +
   scale_fill_manual(values = c(brewer.pal(n = 2, name = "Accent")))
+
+# trying something else
+#ECO_subset %>%
+ # select(ECO_NAME, currentAverageAcres, historic_acres_burned) %>%
+#  #gather(key = "key", value = "value", -state) %>%
+ # ggplot(aes(key, value)) +
+  #geom_bar(stat = "identity") +
+#  scale_y_continuous(expand = c(0, 0)) +  
+ # labs(title = stringr::str_glue("Current Annual Acres Burned Compared to Historic in {params$state}")) 
 ```
 
 
