@@ -6,7 +6,7 @@ output: html_document
 params:
   state: "Maryland"
 ---
-Stuff
+
 
 
 ```{r setup, include=FALSE}

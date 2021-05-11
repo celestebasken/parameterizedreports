@@ -1,0 +1,93 @@
+---
+title: "Evt Eco"
+author: "Celeste Basken"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+params:
+  ECO_NAME: "North Cascades"
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+**BOLD**
+```{r}
+library(tidyverse)
+library(fivethirtyeight)
+library(readr)
+library(dplyr)
+library(RColorBrewer)
+```
+
+```{r}
+# load data
+evt_eco <- read_csv("evt_eco.csv")
+evt_eco_prot <- read_csv("evt_eco_prot.csv")
+
+# add ACRES column based on COUNT
+# COUNT is number of 30x30 m pixels in raster, or 900 m^2
+# add PERCENT column
+evt_eco <- evt_eco %>%
+  rename(COUNT_ALL = COUNT) %>%
+  mutate(ACRES_ALL = round(COUNT_ALL * 900 / 4046.86),
+         PERCENT_ALL = round(ACRES_ALL / sum(ACRES_ALL) * 100, 4))
+evt_eco_prot <- evt_eco_prot %>%
+  rename(COUNT_PROT = COUNT) %>%
+  mutate(ACRES_PROT = round(COUNT_PROT * 900 / 4046.86),
+         PERCENT_PROT = round(ACRES_PROT / sum(ACRES_PROT) *100, 4))
+
+# join to single data frame and replace NAs with 0
+# evt_combine <- left_join(evt_eco, evt_eco_prot)      # why are there a bunch of NAs?? this join did not work- likely because some column names were the same
+evt_combine <- merge(x = evt_eco, y = evt_eco_prot, by = "VALUE", all.x = TRUE) # this join worked
+
+# removing duplicate columns and cleaning it up
+evt_combine <- subset(evt_combine, select = -c(ECOREGION_RASTER.y, EVT_NAME.y, EVT_PHYS.y, ECO_NAME.y))
+evt_combine <- evt_combine %>% 
+  rename(
+    ECO_NAME = ECO_NAME.x,
+    EVT_NAME = EVT_NAME.x,
+    PERCENT_OF_PROT = PERCENT_PROT # this is not the percent protected, it's the percent of each ecosystem out of the total protected
+  )
+
+# finding percent protected
+evt_combine <- evt_combine %>%
+  mutate(
+    PERCENT_PROT = (ACRES_PROT / ACRES_ALL)*100,
+    diff = PERCENT_PROT - PERCENT_ALL,
+    color_score = if_else(diff > 0, "Over-protected", "Under-protected")
+    )
+
+# removing if PERCENT_ALL is 0
+
+evt_combine <- evt_combine %>% filter(PERCENT_ALL != 0)
+
+
+
+# subsetting whole chart into just parameter
+ECO_subset <- evt_combine %>% 
+  filter(ECO_NAME == params$ECO_NAME)
+
+# colors
+display.brewer.all()
+
+# plot diverging bar
+ggplot(data = ECO_subset, aes(x = EVT_NAME, y = diff)) +
+  geom_bar(aes(fill = color_score), stat = "identity") +
+  coord_flip() +
+  scale_x_discrete(limits = rev) +
+  #scale_y_continuous(breaks = seq(-10, 20, by = 5)) +
+  labs(title = "Protected ecosystems within {params$ECO_NAME}",
+       subtitle = "Difference between % protected ownership and % total {params$ECO_NAME}",
+       x = "",
+       y = "Percent difference (%)",
+       fill = "") +
+  theme_light() +
+  scale_fill_manual(values = c(brewer.pal(n = 2, name = "Accent")))
+```
+
+

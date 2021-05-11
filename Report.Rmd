@@ -17,6 +17,7 @@ knitr::opts_chunk$set(echo = FALSE,
 ```{r}
 library(tidyverse)
 library(fivethirtyeight)
+bad_drivers
 ```
 
 ```{r}
